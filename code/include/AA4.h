@@ -3,17 +3,20 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-namespace AA4 {
+namespace AA4 
+{
 
-	struct RbState {
+	struct RbState 
+	{
 		// TODO
 		glm::vec3 centerOfMass;
-		glm::vec3 linearMomentum;
+		glm::vec3 linearVelocity;
 		glm::mat3 angularMomentum;
 	};
 
 
-	class RigidBody {
+	class RigidBody 
+	{
 	public:
 		RigidBody(float mass) : rbMass(mass) {};
 		RbState GetState() const;
@@ -27,32 +30,40 @@ namespace AA4 {
 		virtual void Render() const = 0;
 	protected:
 		glm::mat4 GetTransformMatrix() const;
+
 		float rbMass;
 		float rbAngle;
+		glm::mat4 iBody;
+		glm::vec3 orientation;
+
 	private:
 		RbState state;
 		// TODO: Add other attributes
 	};
 
-	class RigidCube : public RigidBody {
+	class RigidCube : public RigidBody 
+	{
 	public:
 		RigidCube(float mass) : RigidBody(mass) {};
 		void Render() const;
 	};
 
-	class RigidWall : public RigidBody {
+	class RigidWall : public RigidBody 
+	{
 	public:
 		void Render() const;
 	};
 
-	class RigidSphere : public RigidBody {
+	class RigidSphere : public RigidBody 
+	{
 	public:
 		void Render() const;
 	};
 
 	RbState SemiImplicitEuler(const RigidBody* rb, float dt);
 
-	class AA4Simulator : public Simulator {
+	class AA4Simulator : public Simulator 
+	{
 	public:
 		AA4Simulator();
 		void Update(float dt);

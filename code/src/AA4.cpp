@@ -3,14 +3,17 @@
 
 extern bool renderCube;
 extern bool renderParticles;
-namespace Cube {
+namespace Cube 
+{
 	extern void updateCube(const glm::mat4& transform);
 }
 
-namespace AA4 {
+namespace AA4 
+{
 #pragma region Simulation
 
-	AA4Simulator::AA4Simulator() {
+	AA4Simulator::AA4Simulator() 
+	{
 		float mass = 5.f;
 		float angle = 30.f;
 		glm::vec3 velIni = glm::vec3(0.f, 0.f, 0.f);
@@ -39,7 +42,8 @@ namespace AA4 {
 		renderParticles = false;
 	}
 
-	void AA4Simulator::Update(float dt) {
+	void AA4Simulator::Update(float dt) 
+	{
 		RbState previousState = simulatedObject->GetState();
 		RbState newState = SemiImplicitEuler(simulatedObject, dt);
 
@@ -48,13 +52,15 @@ namespace AA4 {
 		simulatedObject->SetState(newState);
 	}
 
-	void AA4Simulator::RenderUpdate() {
+	void AA4Simulator::RenderUpdate() 
+	{
 		simulatedObject->Render();
 	}
 
 	void AA4Simulator::RenderGui() {}
 
-	AA4Simulator::~AA4Simulator() {
+	AA4Simulator::~AA4Simulator() 
+	{
 		renderCube = false;
 		delete simulatedObject;
 	}
@@ -63,58 +69,74 @@ namespace AA4 {
 
 #pragma region RigidBodies
 
-	RbState RigidBody::GetState() const {
+	RbState RigidBody::GetState() const 
+	{
 		return state;
 	}
-	void RigidBody::SetState(RbState state) {
+	void RigidBody::SetState(RbState state) 
+	{
 		this->state = state;
 	}
 
-	glm::vec3 RigidBody::GetLinearVelocity() const {
+	glm::vec3 RigidBody::GetLinearVelocity() const 
+	{
 		// TODO
 		return glm::vec3();
 	}
-	glm::mat3 RigidBody::GetInverseInertiaTensor() const {
+
+	glm::mat3 RigidBody::GetInverseInertiaTensor() const 
+	{
 		// TODO
 		return glm::mat3();
 	}
-	glm::vec3 RigidBody::GetAngularVelocity() const {
+
+	glm::vec3 RigidBody::GetAngularVelocity() const 
+	{
 		// TODO
 		return glm::vec3();
 	}
-	glm::mat3 RigidBody::GetRotationMatrix() const {
+
+	glm::mat3 RigidBody::GetRotationMatrix() const 
+	{
 		// TODO
 		return state.angularMomentum;
 	}
-	float RigidBody::GetMassInverse() const {
+
+	float RigidBody::GetMassInverse() const 
+	{
 		// TODO
 		return 0.f;
 	}
 
-	glm::mat4 RigidBody::GetTransformMatrix() const {
+	glm::mat4 RigidBody::GetTransformMatrix() const 
+	{
 		// TODO
 		return glm::translate(glm::mat4(), state.centerOfMass);
 	}
 
-	void RigidCube::Render() const {
+	void RigidCube::Render() const 
+	{
 		Cube::updateCube(GetTransformMatrix());
 		Cube::updateCube(GetRotationMatrix());
 	}
 
-	void RigidWall::Render() const {
+	void RigidWall::Render() const 
+	{
 		// DO NOTHING
 	}
 
-	void RigidSphere::Render() const {
+	void RigidSphere::Render() const 
+	{
 		// TODO
 	}
 
 #pragma endregion
-	RbState SemiImplicitEuler(const RigidBody* rb, float dt) {
+	RbState SemiImplicitEuler(const RigidBody* rb, float dt) 
+	{
 		// TODO
 		RbState current = rb->GetState();
 
-		glm::vec3 newLinearMomentum = current.linearMomentum;
+		glm::vec3 newLinearMomentum = current.linearVelocity;
 		glm::vec3 newCoM = current.centerOfMass + dt * newLinearMomentum;
 
 		glm::mat3 newAngularMomentum = current.angularMomentum;
