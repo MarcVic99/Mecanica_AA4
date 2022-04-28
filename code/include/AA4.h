@@ -14,7 +14,6 @@ namespace AA4
 		glm::mat3 angularMomentum;
 
 		glm::mat3 rotation;
-		glm::vec3 P;
 		glm::vec3 L;
 	};
 
@@ -30,7 +29,7 @@ namespace AA4
 
 			state.centerOfMass = CoM;
 			state.rotation = rotation;
-			state.P = mass * v;
+			state.linearVelocity = mass * v;
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
 		};
 
@@ -45,7 +44,7 @@ namespace AA4
 		virtual void Render() const = 0;
 
 	protected:
-		glm::mat3 GetTransformMatrix() const;
+		glm::mat4 GetTransformMatrix() const;
 
 		float rbMass;
 		float rbAngle;

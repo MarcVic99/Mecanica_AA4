@@ -34,12 +34,6 @@ namespace AA4
 
 		simulatedObject = new RigidCube(mass, glm::vec3(0.f, 5.f, 0.f), velInit, glm::vec3(0.f, 1.f, 0.f), glm::mat3(rotation));
 
-		simulatedObject->SetState({
-						glm::vec3(0.f, 5.f, 0.f),
-						mass * velInit,
-						rotYaw * rotPitch * rotRoll 
-		});
-
 		renderCube = true;
 		renderParticles = false;
 	}
