@@ -16,7 +16,7 @@ namespace AA4
 	{
 		float mass = 5.f;
 		float angle = 30.f;
-		glm::vec3 velIni = glm::vec3(0.f, 0.f, 0.f);
+		glm::vec3 velInit = glm::vec3(0.f, 0.f, 0.f);
 		
 		glm::mat3 rotRoll = glm::mat3(glm::vec3(1,0,0), 
 			glm::vec3 (0,glm::cos(glm::degrees(angle)), -glm::sin(glm::degrees(angle))),
@@ -30,13 +30,15 @@ namespace AA4
 			glm::vec3(-glm::sin(glm::degrees(angle)), glm::cos(glm::degrees(angle)), 0),
 			glm::vec3(0, 0, 1));
 
-		simulatedObject = new RigidCube(mass);
+		glm::mat4 rotation = rotYaw * rotPitch * rotRoll;
+
+		simulatedObject = new RigidCube(mass, glm::vec3(0.f, 5.f, 0.f), velInit, glm::vec3(0.f, 1.f, 0.f), glm::mat3(rotation));
 
 		simulatedObject->SetState({
 						glm::vec3(0.f, 5.f, 0.f),
-						mass * velIni,
+						mass * velInit,
 						rotYaw * rotPitch * rotRoll 
-			});
+		});
 
 		renderCube = true;
 		renderParticles = false;

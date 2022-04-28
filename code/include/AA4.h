@@ -12,13 +12,28 @@ namespace AA4
 		glm::vec3 centerOfMass;
 		glm::vec3 linearVelocity;
 		glm::mat3 angularMomentum;
+
+		glm::mat3 rotation;
+		glm::vec3 P;
+		glm::vec3 L;
 	};
 
 
 	class RigidBody 
 	{
 	public:
-		RigidBody(float mass) : rbMass(mass) {};
+		RigidBody() : RigidBody(1.f, glm::mat3(1.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::mat3(1.f)) {};
+		RigidBody(float mass, glm::mat3 Ibody, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::mat3 rotation)
+		{
+			this->rbMass = mass;
+			this->InverseIbody = glm::inverse(Ibody);
+
+			state.centerOfMass = CoM;
+			state.rotation = rotation;
+			state.P = mass * v;
+			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
+		};
+
 		RbState GetState() const;
 		void SetState(RbState state);
 		glm::vec3 GetLinearVelocity() const;
@@ -28,12 +43,13 @@ namespace AA4
 		float GetMassInverse() const;
 
 		virtual void Render() const = 0;
+
 	protected:
-		glm::mat4 GetTransformMatrix() const;
+		glm::mat3 GetTransformMatrix() const;
 
 		float rbMass;
 		float rbAngle;
-		glm::mat4 iBody;
+		glm::mat3 InverseIbody;
 		glm::vec3 orientation;
 
 	private:
@@ -44,8 +60,13 @@ namespace AA4
 	class RigidCube : public RigidBody 
 	{
 	public:
-		RigidCube(float mass) : RigidBody(mass) {};
+		RigidCube(float mass, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::mat3 rotation) : 
+			RigidBody(mass, ComputeIbody(mass, 1.f, 1.f, 1.f), CoM, v, w, rotation) {};
+		
 		void Render() const;
+
+	private:
+		static glm::mat3 ComputeIbody(float mass, float depth, float width, float height);
 	};
 
 	class RigidWall : public RigidBody 
