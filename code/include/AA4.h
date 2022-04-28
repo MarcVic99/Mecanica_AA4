@@ -10,12 +10,11 @@ namespace AA4
 	{
 		// TODO
 		glm::vec3 centerOfMass;
-		glm::vec3 linearVelocity;
-		glm::mat3 angularMomentum;
 
 		glm::mat3 rotation;
-		glm::vec3 P;
-		glm::vec3 L;
+		
+		glm::vec3 P; // Moment linear
+		glm::vec3 L; // Moment Angu-L-ar
 	};
 
 
@@ -40,12 +39,13 @@ namespace AA4
 		glm::mat3 GetInverseInertiaTensor() const;
 		glm::vec3 GetAngularVelocity() const;
 		glm::mat3 GetRotationMatrix() const;
+		float GetMass() const;
 		float GetMassInverse() const;
 
 		virtual void Render() const = 0;
 
 	protected:
-		glm::mat3 GetTransformMatrix() const;
+		glm::mat4 GetTransformMatrix() const;
 
 		float rbMass;
 		float rbAngle;
