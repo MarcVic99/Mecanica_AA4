@@ -88,13 +88,13 @@ namespace AA4
 
 	glm::mat3 RigidBody::GetInverseInertiaTensor() const 
 	{
-		// TODO
-		return glm::mat3();
+		glm::mat3 rotMat = GetRotationMatrix();
+
+		return rotMat * InverseIbody * glm::transpose(rotMat);
 	}
 
 	glm::vec3 RigidBody::GetAngularVelocity() const 
 	{
-		// TODO
 		return glm::vec3();
 	}
 
@@ -158,9 +158,12 @@ namespace AA4
 		glm::vec3 newLinearMomentum = current.L;
 		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;// newLinearMomentum;
 
-		glm::mat3 newInverseIbody = current.rotation * rb->GetInverseInertiaTensor() * glm::transpose(current.rotation);
-		
-		glm::mat3 w = newInverseIbody; //* newL;
+		glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
+
+		glm::vec3 vecW = newInverseIbody * newL;
+		glm::mat3 w(0.f, -vecW.z, vecW.y,
+					vecW.z, 0.f, -vecW.x,
+					-vecW.y, vecW.x, 0.f);
 
 		glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
 

@@ -29,7 +29,7 @@ namespace AA4
 
 			state.centerOfMass = CoM;
 			state.rotation = rotation;
-			state.linearVelocity = mass * v;
+			state.P = mass * v;
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
 		};
 
