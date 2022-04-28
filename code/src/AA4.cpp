@@ -40,12 +40,6 @@ namespace AA4
 			rotation
 		);
 
-		/*simulatedObject->SetState({
-						glm::vec3(0.f, 5.f, 0.f),
-						mass * velInit,
-						rotYaw * rotPitch * rotRoll 
-		});*/
-
 		renderCube = true;
 		renderParticles = false;
 	}
