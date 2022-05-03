@@ -103,11 +103,16 @@ namespace AA4
 	{
 		// TODO
 		// Make it use quaternions
+		glm::quat testQ;
+		
 		// Access state.quat
-		// Convert to 3x3 mat:
-		// (0.5 - y^2 - z^2, xy - wz, xz - wy)
-		// (¿?, ¿?, ¿?)
-		// (¿?, ¿?, ¿?)
+		// Convert to 3x3 mat
+		//		(0.5 - y^2 - z^2, xy - wz, xz - wy)
+		// 2 *	(xy - wz, 0.5 - x^2 - z^2, yz + wx)
+		//		(xz + wy, yz - wx, 0.5 - x^2 - y^2)
+		glm::mat3 result = 2.f * glm::mat3(0.5f - testQ.y * testQ.y - testQ.z * testQ.z, testQ.x * testQ.y + testQ.w * testQ.z, testQ.x * testQ.z - testQ.w * testQ.y,
+										testQ.x * testQ.y - testQ.w * testQ.z, 0.5f - testQ.x * testQ.x - testQ.z * testQ.z, testQ.y * testQ.z + testQ.w * testQ.x,
+										testQ.x * testQ.z + testQ.w * testQ.y, testQ.y * testQ.z - testQ.w * testQ.x, 0.5f - testQ.x * testQ.x - testQ.y * testQ.y);
 
 		return state.rotation;
 	}

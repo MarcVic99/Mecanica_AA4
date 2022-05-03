@@ -1,6 +1,7 @@
 #pragma once
 #include <Simulator.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <vector>
 
 namespace AA4 
