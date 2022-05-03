@@ -101,6 +101,13 @@ namespace AA4
 	glm::mat3 RigidBody::GetRotationMatrix() const 
 	{
 		// TODO
+		// Make it use quaternions
+		// Access state.quat
+		// Convert to 3x3 mat:
+		// (0.5 - y^2 - z^2, xy - wz, xz - wy)
+		// (¿?, ¿?, ¿?)
+		// (¿?, ¿?, ¿?)
+
 		return state.rotation;
 	}
 
@@ -144,27 +151,39 @@ namespace AA4
 		// TODO
 	}
 
+	/*glm::quat RigidBody::GetQuat(float angle, glm::vec3 axis)
+	{
+		return state.rotQuat;
+	}*/
+
 #pragma endregion
 	RbState SemiImplicitEuler(const RigidBody* rb, float dt)
 	{
 		// TODO
 		RbState current = rb->GetState();
 
+		// P(t + dt) = P(t) + dt * F(t)
 		glm::vec3 newP = current.P + dt; //*F;
+
+		// L(t + dt) = L(t) + dt * torque(t)
 		glm::vec3 newL = current.L + dt; //* torque
 
+		// v(t + dt) = P(t + dt) / M
 		glm::vec3 newVelocity = newP / rb->GetMass();
 
-		glm::vec3 newLinearMomentum = current.L;
-		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;// newLinearMomentum;
+		// x(t + dt) = x(t) + dt * v(t + dt)
+		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;
 
+		// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
 		glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
 
+		// w(t) = I(t)^-1 * L(t + dt)
 		glm::vec3 vecW = newInverseIbody * newL;
 		glm::mat3 w(0.f, -vecW.z, vecW.y,
 					vecW.z, 0.f, -vecW.x,
 					-vecW.y, vecW.x, 0.f);
 
+		// R(t + dt) = R(t) + dt * (w(t) * R(t))
 		glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
 
 		return { newCoM, newRotation, newP, newL };

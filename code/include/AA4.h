@@ -15,6 +15,8 @@ namespace AA4
 		
 		glm::vec3 P; // Moment linear
 		glm::vec3 L; // Moment Angu-L-ar
+
+		//glm::quat rotQuat;
 	};
 
 
@@ -31,6 +33,9 @@ namespace AA4
 			state.rotation = rotation;
 			state.P = mass * v;
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
+
+			// normalize quat
+			// GetQuat(float alpha, glm::vec3 axis)
 		};
 
 		RbState GetState() const;
@@ -41,6 +46,7 @@ namespace AA4
 		glm::mat3 GetRotationMatrix() const;
 		float GetMass() const;
 		float GetMassInverse() const;
+		//glm::quat GetQuat(float angle, glm::vec3 axis);
 
 		virtual void Render() const = 0;
 
