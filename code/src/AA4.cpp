@@ -16,7 +16,7 @@ namespace AA4
 	{
 		float mass = 5.f;
 		float angle = 30.f;
-		glm::vec3 velInit = glm::vec3(0.f, 0.f, 0.f);
+		glm::vec3 velInit = glm::vec3(0.f, 0.2f, 0.f);
 		
 		glm::mat3 rotRoll = glm::mat3(glm::vec3(1,0,0), 
 			glm::vec3 (0, glm::cos(glm::radians(angle)), -glm::sin(glm::radians(angle))),
@@ -37,7 +37,7 @@ namespace AA4
 			mass, 
 			glm::vec3(0.f, 5.f, 0.f), 
 			velInit, 
-			glm::vec3(0.f, 1.f, 0.f), 
+			glm::vec3(0.f, 0.2f, 0.f), 
 			rotation
 		);
 
@@ -140,9 +140,9 @@ namespace AA4
 
 	glm::mat3 RigidCube::ComputeIbody(float mass, float depth, float width, float height) {
 		
-		glm::mat3 inertiaTensor = glm::mat3(glm::vec3(1 / 12 * mass * ((height * height) + (depth * depth)), 0, 0),
-			glm::vec3(0, 1 / 12 * mass * ((width * width) + (depth * depth)), 0),
-			glm::vec3(0, 0, 1 / 12 * mass * ((width * width) + (height * height))));
+		glm::mat3 inertiaTensor = glm::mat3(glm::vec3(1.f / 12.f * mass * ((height * height) + (depth * depth)), 0.f, 0.f),
+			glm::vec3(0.f, 1.f / 12.f * mass * ((width * width) + (depth * depth)), 0.f),
+			glm::vec3(0.f, 0.f, 1.f / 12.f * mass * ((width * width) + (height * height))));
 
 		return inertiaTensor;
 	}
@@ -168,30 +168,39 @@ namespace AA4
 		// TODO
 		RbState current = rb->GetState();
 
-		//// P(t + dt) = P(t) + dt * F(t)
-		//glm::vec3 newP = current.P + dt; //*F;
+		// P(t + dt) = P(t) + dt * F(t)
+		glm::vec3 newP = current.P; // + dt; //*F;
 
-		//// L(t + dt) = L(t) + dt * torque(t)
-		//glm::vec3 newL = current.L + dt; //* torque
+		// L(t + dt) = L(t) + dt * torque(t)
+		glm::vec3 newL = current.L; // + dt; //* torque
 
-		//// v(t + dt) = P(t + dt) / M
-		//glm::vec3 newVelocity = newP / rb->GetMass();
+		// v(t + dt) = P(t + dt) / M
+		glm::vec3 newVelocity = newP / rb->GetMass();
 
-		//// x(t + dt) = x(t) + dt * v(t + dt)
-		//glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;
+		// x(t + dt) = x(t) + dt * v(t + dt)
+		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity; // Nice
 
-		//// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
-		//glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
+		// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
+		glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
 
-		//// w(t) = I(t)^-1 * L(t + dt)
-		//glm::vec3 vecW = newInverseIbody * newL;
-		//glm::mat3 w(0.f, -vecW.z, vecW.y,
-		//			vecW.z, 0.f, -vecW.x,
-		//			-vecW.y, vecW.x, 0.f);
+		// w(t) = I(t)^-1 * L(t + dt)
+		glm::vec3 vecW = newInverseIbody * newL;
+		glm::mat3 w(0.f, -vecW.z, vecW.y,
+					vecW.z, 0.f, -vecW.x,
+					-vecW.y, vecW.x, 0.f);
 
-		//// R(t + dt) = R(t) + dt * (w(t) * R(t))
-		//glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
+		// R(t + dt) = R(t) + dt * (w(t) * R(t))
+		glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
 
-		return current;//{ newCoM, newRotation, newP, newL };
+		printf("X: %f\n", newCoM.x);
+		printf("Y: %f\n", newCoM.y);
+		printf("Z: %f\n", newCoM.z);
+		/*printf("X: %f\n", newP.x);
+		printf("Y: %f\n", newP.y);
+		printf("Z: %f\n", newP.z);*/
+
+
+
+		return { newCoM, newRotation, newP, newL };
 	}
 }
