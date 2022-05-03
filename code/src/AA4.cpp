@@ -19,18 +19,19 @@ namespace AA4
 		glm::vec3 velInit = glm::vec3(0.f, 0.f, 0.f);
 		
 		glm::mat3 rotRoll = glm::mat3(glm::vec3(1,0,0), 
-			glm::vec3 (0, glm::cos(glm::degrees(angle)), -glm::sin(glm::degrees(angle))),
-			glm::vec3(0, glm::sin(glm::degrees(angle)), glm::cos(glm::degrees(angle))));
+			glm::vec3 (0, glm::cos(glm::radians(angle)), -glm::sin(glm::radians(angle))),
+			glm::vec3(0, glm::sin(glm::radians(angle)), glm::cos(glm::radians(angle))));
 
-		glm::mat3 rotPitch = glm::mat3(glm::vec3(glm::cos(glm::degrees(angle)), 0, glm::sin(glm::degrees(angle))),
+		glm::mat3 rotPitch = glm::mat3(glm::vec3(glm::cos(glm::radians(angle)), 0, glm::sin(glm::radians(angle))),
 			glm::vec3(0, 1, 0),
-			glm::vec3(-glm::sin(glm::degrees(angle)), 0, glm::cos(glm::degrees(angle))));
+			glm::vec3(-glm::sin(glm::radians(angle)), 0, glm::cos(glm::radians(angle))));
 
-		glm::mat3 rotYaw = glm::mat3(glm::vec3(glm::cos(glm::degrees(angle)), -glm::sin(glm::degrees(angle)), 0),
-			glm::vec3(-glm::sin(glm::degrees(angle)), glm::cos(glm::degrees(angle)), 0),
+		glm::mat3 rotYaw = glm::mat3(glm::vec3(glm::cos(glm::radians(angle)), -glm::sin(glm::radians(angle)), 0),
+			glm::vec3(glm::sin(glm::radians(angle)), glm::cos(glm::radians(angle)), 0),
 			glm::vec3(0, 0, 1));
 
 		glm::mat3 rotation = rotYaw * rotPitch * rotRoll;
+		//glm::mat3 rotation = glm::mat3(1.f);
 
 		simulatedObject = new RigidCube(
 			mass, 
@@ -162,30 +163,30 @@ namespace AA4
 		// TODO
 		RbState current = rb->GetState();
 
-		// P(t + dt) = P(t) + dt * F(t)
-		glm::vec3 newP = current.P + dt; //*F;
+		//// P(t + dt) = P(t) + dt * F(t)
+		//glm::vec3 newP = current.P + dt; //*F;
 
-		// L(t + dt) = L(t) + dt * torque(t)
-		glm::vec3 newL = current.L + dt; //* torque
+		//// L(t + dt) = L(t) + dt * torque(t)
+		//glm::vec3 newL = current.L + dt; //* torque
 
-		// v(t + dt) = P(t + dt) / M
-		glm::vec3 newVelocity = newP / rb->GetMass();
+		//// v(t + dt) = P(t + dt) / M
+		//glm::vec3 newVelocity = newP / rb->GetMass();
 
-		// x(t + dt) = x(t) + dt * v(t + dt)
-		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;
+		//// x(t + dt) = x(t) + dt * v(t + dt)
+		//glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;
 
-		// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
-		glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
+		//// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
+		//glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
 
-		// w(t) = I(t)^-1 * L(t + dt)
-		glm::vec3 vecW = newInverseIbody * newL;
-		glm::mat3 w(0.f, -vecW.z, vecW.y,
-					vecW.z, 0.f, -vecW.x,
-					-vecW.y, vecW.x, 0.f);
+		//// w(t) = I(t)^-1 * L(t + dt)
+		//glm::vec3 vecW = newInverseIbody * newL;
+		//glm::mat3 w(0.f, -vecW.z, vecW.y,
+		//			vecW.z, 0.f, -vecW.x,
+		//			-vecW.y, vecW.x, 0.f);
 
-		// R(t + dt) = R(t) + dt * (w(t) * R(t))
-		glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
+		//// R(t + dt) = R(t) + dt * (w(t) * R(t))
+		//glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
 
-		return { newCoM, newRotation, newP, newL };
+		return current;//{ newCoM, newRotation, newP, newL };
 	}
 }
