@@ -103,18 +103,17 @@ namespace AA4
 	{
 		// TODO
 		// Make it use quaternions
-		glm::quat testQ;
-		
 		// Access state.quat
 		// Convert to 3x3 mat
 		//		(0.5 - y^2 - z^2, xy - wz, xz - wy)
 		// 2 *	(xy - wz, 0.5 - x^2 - z^2, yz + wx)
 		//		(xz + wy, yz - wx, 0.5 - x^2 - y^2)
-		glm::mat3 result = 2.f * glm::mat3(0.5f - testQ.y * testQ.y - testQ.z * testQ.z, testQ.x * testQ.y + testQ.w * testQ.z, testQ.x * testQ.z - testQ.w * testQ.y,
-										testQ.x * testQ.y - testQ.w * testQ.z, 0.5f - testQ.x * testQ.x - testQ.z * testQ.z, testQ.y * testQ.z + testQ.w * testQ.x,
-										testQ.x * testQ.z + testQ.w * testQ.y, testQ.y * testQ.z - testQ.w * testQ.x, 0.5f - testQ.x * testQ.x - testQ.y * testQ.y);
+		glm::mat3 result = 2.f * glm::mat3
+			(0.5f - state.rotQuat.y * state.rotQuat.y - state.rotQuat.z * state.rotQuat.z, state.rotQuat.x * state.rotQuat.y + state.rotQuat.w * state.rotQuat.z, state.rotQuat.x * state.rotQuat.z - state.rotQuat.w * state.rotQuat.y,
+			state.rotQuat.x * state.rotQuat.y - state.rotQuat.w * state.rotQuat.z, 0.5f - state.rotQuat.x * state.rotQuat.x - state.rotQuat.z * state.rotQuat.z, state.rotQuat.y * state.rotQuat.z + state.rotQuat.w * state.rotQuat.x,
+			state.rotQuat.x * state.rotQuat.z + state.rotQuat.w * state.rotQuat.y, state.rotQuat.y * state.rotQuat.z - state.rotQuat.w * state.rotQuat.x, 0.5f - state.rotQuat.x * state.rotQuat.x - state.rotQuat.y * state.rotQuat.y);
 
-		return state.rotation;
+		return result;
 	}
 
 	float RigidBody::GetMass() const
@@ -157,9 +156,28 @@ namespace AA4
 		// TODO
 	}
 
-	/*glm::quat RigidBody::GetQuat(float angle, glm::vec3 axis)
+	glm::quat RigidBody::GetQuat(float angle, glm::vec3 axis) const
 	{
+		// TODO
 		return state.rotQuat;
+	}
+
+	glm::mat3 RigidBody::GetFace() const
+	{
+		// TODO
+		return glm::mat3(1.f);
+	}
+
+	glm::vec3 RigidBody::GetVertex() const
+	{
+		// TODO
+		return glm::vec3(1.f);
+	}
+
+	/*bool RigidBody::DetectCollision(RigidBody cube, RigidBody floor) const
+	{
+		// TODO
+		return true;
 	}*/
 
 #pragma endregion
@@ -167,6 +185,11 @@ namespace AA4
 	{
 		// TODO
 		RbState current = rb->GetState();
+
+		/*if (DetectCollision(RigidBody cube, RigidBody floor))
+		{ 
+			return current; 
+		}*/
 
 		//// P(t + dt) = P(t) + dt * F(t)
 		//glm::vec3 newP = current.P + dt; //*F;

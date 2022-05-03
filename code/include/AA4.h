@@ -17,7 +17,7 @@ namespace AA4
 		glm::vec3 P; // Moment linear
 		glm::vec3 L; // Moment Angu-L-ar
 
-		//glm::quat rotQuat;
+		glm::quat rotQuat;
 	};
 
 
@@ -36,7 +36,7 @@ namespace AA4
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
 
 			// normalize quat
-			// GetQuat(float alpha, glm::vec3 axis)
+			state.rotQuat = glm::normalize(rotation);
 		};
 
 		RbState GetState() const;
@@ -47,7 +47,12 @@ namespace AA4
 		glm::mat3 GetRotationMatrix() const;
 		float GetMass() const;
 		float GetMassInverse() const;
-		//glm::quat GetQuat(float angle, glm::vec3 axis);
+		glm::quat GetQuat(float angle, glm::vec3 axis) const;
+
+		glm::mat3 GetFace() const;
+		glm::vec3 GetVertex() const;
+
+		//bool DetectCollision(RigidBody cube, RigidBody floor) const;
 
 		virtual void Render() const = 0;
 
@@ -58,6 +63,9 @@ namespace AA4
 		float rbAngle;
 		glm::mat3 InverseIbody;
 		glm::vec3 orientation;
+
+		std::vector<glm::mat3> faces;
+		std::vector<glm::vec3> vertex;
 
 	private:
 		RbState state;
