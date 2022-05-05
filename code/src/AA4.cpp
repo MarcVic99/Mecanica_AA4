@@ -186,15 +186,16 @@ namespace AA4
 		// TODO
 		RbState current = rb->GetState();
 
-		// P(t + dt) = P(t) + dt * F(t)
-		glm::vec3 newP = current.P; // + dt; //*F;
 		/*if (DetectCollision(RigidBody cube, RigidBody floor))
-		{ 
-			return current; 
+		{
+			return current;
 		}*/
 
-		//// P(t + dt) = P(t) + dt * F(t)
-		//glm::vec3 newP = current.P + dt; //*F;
+		// P(t + dt) = P(t) + dt * F(t)
+		glm::vec3 newP = current.P; // + dt; //*F;
+
+		// P(t + dt) = P(t) + dt * F(t)
+		glm::vec3 newP = current.P + dt; //*F;
 
 		// L(t + dt) = L(t) + dt * torque(t)
 		glm::vec3 newL = current.L; // + dt; //* torque
