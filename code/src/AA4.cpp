@@ -120,6 +120,7 @@ namespace AA4
 	{
 		return rbMass;
 	}
+
 	float RigidBody::GetMassInverse() const 
 	{
 		// TODO
@@ -159,7 +160,11 @@ namespace AA4
 	glm::quat RigidBody::GetQuat(float angle, glm::vec3 axis) const
 	{
 		// TODO
-		return state.rotQuat;
+		glm::quat resQuat;
+		resQuat = axis * sin(angle / 2.f);
+		resQuat.w = cos(angle / 2.f);
+
+		return resQuat;
 	}
 
 	glm::mat3 RigidBody::GetFace() const
@@ -192,10 +197,7 @@ namespace AA4
 		}*/
 
 		// P(t + dt) = P(t) + dt * F(t)
-		glm::vec3 newP = current.P; // + dt; //*F;
-
-		// P(t + dt) = P(t) + dt * F(t)
-		glm::vec3 newP = current.P + dt; //*F;
+		glm::vec3 newP = current.P; // + dt; //* F;
 
 		// L(t + dt) = L(t) + dt * torque(t)
 		glm::vec3 newL = current.L; // + dt; //* torque
@@ -204,7 +206,7 @@ namespace AA4
 		glm::vec3 newVelocity = newP / rb->GetMass();
 
 		// x(t + dt) = x(t) + dt * v(t + dt)
-		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity; // Nice
+		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;
 
 		// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
 		glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
@@ -224,8 +226,6 @@ namespace AA4
 		/*printf("X: %f\n", newP.x);
 		printf("Y: %f\n", newP.y);
 		printf("Z: %f\n", newP.z);*/
-
-
 
 		return { newCoM, newRotation, newP, newL };
 	}
