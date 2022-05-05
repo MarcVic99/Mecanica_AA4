@@ -35,7 +35,7 @@ namespace AA4
 			state.P = mass * v;
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
 
-			// normalize quat
+			// normalized quat
 			state.rotQuat = quatRotation;
 		};
 
@@ -62,7 +62,6 @@ namespace AA4
 		float rbMass;
 		float rbAngle;
 		glm::mat3 InverseIbody;
-		glm::vec3 orientation;
 
 		std::vector<glm::mat3> faces;
 		std::vector<glm::vec3> vertex;

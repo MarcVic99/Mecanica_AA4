@@ -18,7 +18,7 @@ namespace AA4
 		float angle = 30.f;
 		glm::vec3 velInit = glm::vec3(0.f, 0.2f, 0.f);
 		
-		glm::mat3 rotRoll = glm::mat3(glm::vec3(1,0,0), 
+		/*glm::mat3 rotRoll = glm::mat3(glm::vec3(1,0,0), 
 			glm::vec3 (0, glm::cos(glm::radians(angle)), -glm::sin(glm::radians(angle))),
 			glm::vec3(0, glm::sin(glm::radians(angle)), glm::cos(glm::radians(angle))));
 
@@ -30,15 +30,14 @@ namespace AA4
 			glm::vec3(glm::sin(glm::radians(angle)), glm::cos(glm::radians(angle)), 0),
 			glm::vec3(0, 0, 1));
 
-		glm::mat3 rotation = rotYaw * rotPitch * rotRoll;
-		//glm::mat3 rotation = glm::mat3(1.f);
+		glm::mat3 rotation = rotYaw * rotPitch * rotRoll;*/
 		
 		simulatedObject = new RigidCube(
 			mass, 
 			glm::vec3(0.f, 5.f, 0.f), 
 			velInit, 
 			glm::vec3(0.f, 0.2f, 0.f), 
-			simulatedObject->GetQuat(angle, glm::vec3(0.f, 0.f, 0.f))
+			simulatedObject->GetQuat(angle, glm::vec3(0.f, 1.f, 0.f))
 		);
 
 		renderCube = true;
@@ -161,7 +160,9 @@ namespace AA4
 	{
 		// TODO
 		glm::quat resQuat;
-		resQuat = axis * sin(angle / 2.f);
+		resQuat.x = axis.x * sin(angle / 2.f);
+		resQuat.y = axis.y * sin(angle / 2.f);
+		resQuat.z = axis.z * sin(angle / 2.f);
 		resQuat.w = cos(angle / 2.f);
 
 		return glm::normalize(resQuat);
@@ -197,10 +198,10 @@ namespace AA4
 		}*/
 
 		// P(t + dt) = P(t) + dt * F(t)
-		glm::vec3 newP = current.P; // + dt; //* F;
+		glm::vec3 newP = current.P; // + dt * F;
 
 		// L(t + dt) = L(t) + dt * torque(t)
-		glm::vec3 newL = current.L; // + dt; //* torque
+		glm::vec3 newL = current.L; // + dt * torque;
 
 		// v(t + dt) = P(t + dt) / M
 		glm::vec3 newVelocity = newP / rb->GetMass();
@@ -221,11 +222,14 @@ namespace AA4
 		//glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
 
 		// ¨q(t) = 1/2 * w(t) * q(t)
-		glm::quat newQuat = (1.f / 2.f) * vecW * current.rotQuat;
+		glm::quat derivQuat = (1.f / 2.f) * glm::quat(0.f, vecW) * current.rotQuat;
+		
+		// q(t + dt) = q(t) + dt * ¨q(t)
+		glm::quat newQuat = glm::normalize(current.rotQuat + dt * derivQuat);
 
-		printf("X: %f\n", newCoM.x);
+		/*printf("X: %f\n", newCoM.x);
 		printf("Y: %f\n", newCoM.y);
-		printf("Z: %f\n", newCoM.z);
+		printf("Z: %f\n", newCoM.z);*/
 		/*printf("X: %f\n", newP.x);
 		printf("Y: %f\n", newP.y);
 		printf("Z: %f\n", newP.z);*/
