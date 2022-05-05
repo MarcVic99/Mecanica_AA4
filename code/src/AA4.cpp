@@ -32,13 +32,13 @@ namespace AA4
 
 		glm::mat3 rotation = rotYaw * rotPitch * rotRoll;
 		//glm::mat3 rotation = glm::mat3(1.f);
-
+		
 		simulatedObject = new RigidCube(
 			mass, 
 			glm::vec3(0.f, 5.f, 0.f), 
 			velInit, 
 			glm::vec3(0.f, 0.2f, 0.f), 
-			rotation
+			simulatedObject->GetQuat(angle, glm::vec3(0.f, 0.f, 0.f))
 		);
 
 		renderCube = true;
@@ -164,19 +164,19 @@ namespace AA4
 		resQuat = axis * sin(angle / 2.f);
 		resQuat.w = cos(angle / 2.f);
 
-		return resQuat;
+		return glm::normalize(resQuat);
 	}
 
 	glm::mat3 RigidBody::GetFace() const
 	{
 		// TODO
-		return glm::mat3(1.f);
+		return faces[0];
 	}
 
 	glm::vec3 RigidBody::GetVertex() const
 	{
 		// TODO
-		return glm::vec3(1.f);
+		return vertex[0];
 	}
 
 	/*bool RigidBody::DetectCollision(RigidBody cube, RigidBody floor) const
@@ -218,7 +218,10 @@ namespace AA4
 					-vecW.y, vecW.x, 0.f);
 
 		// R(t + dt) = R(t) + dt * (w(t) * R(t))
-		glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
+		//glm::mat3 newRotation = current.rotation + dt * (w * current.rotation);
+
+		// ¨q(t) = 1/2 * w(t) * q(t)
+		glm::quat newQuat = (1.f / 2.f) * vecW * current.rotQuat;
 
 		printf("X: %f\n", newCoM.x);
 		printf("Y: %f\n", newCoM.y);
@@ -227,6 +230,6 @@ namespace AA4
 		printf("Y: %f\n", newP.y);
 		printf("Z: %f\n", newP.z);*/
 
-		return { newCoM, newRotation, newP, newL };
+		return { newCoM, newP, newL, newQuat };
 	}
 }

@@ -12,7 +12,7 @@ namespace AA4
 		// TODO
 		glm::vec3 centerOfMass;
 
-		glm::mat3 rotation;
+		//glm::mat3 rotation;
 		
 		glm::vec3 P; // Moment linear
 		glm::vec3 L; // Moment Angu-L-ar
@@ -24,19 +24,19 @@ namespace AA4
 	class RigidBody 
 	{
 	public:
-		RigidBody() : RigidBody(1.f, glm::mat3(1.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::mat3(1.f)) {};
-		RigidBody(float mass, glm::mat3 Ibody, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::mat3 rotation)
+		RigidBody() : RigidBody(1.f, glm::mat3(1.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::quat()) {};
+		RigidBody(float mass, glm::mat3 Ibody, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::quat quatRotation)
 		{
 			this->rbMass = mass;
 			this->InverseIbody = glm::inverse(Ibody);
 
 			state.centerOfMass = CoM;
-			state.rotation = rotation;
+			//state.rotation = rotation;
 			state.P = mass * v;
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
 
 			// normalize quat
-			state.rotQuat = glm::normalize(rotation);
+			state.rotQuat = quatRotation;
 		};
 
 		RbState GetState() const;
@@ -75,8 +75,8 @@ namespace AA4
 	class RigidCube : public RigidBody 
 	{
 	public:
-		RigidCube(float mass, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::mat3 rotation) : 
-			RigidBody(mass, ComputeIbody(mass, 1.f, 1.f, 1.f), CoM, v, w, rotation) {};
+		RigidCube(float mass, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::quat qRotation) : 
+			RigidBody(mass, ComputeIbody(mass, 1.f, 1.f, 1.f), CoM, v, w, qRotation) {};
 		
 		void Render() const;
 
