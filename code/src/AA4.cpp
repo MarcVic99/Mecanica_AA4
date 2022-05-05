@@ -168,23 +168,47 @@ namespace AA4
 		return glm::normalize(resQuat);
 	}
 
-	glm::mat3 RigidBody::GetFace() const
+	glm::mat3 RigidBody::GetFace(int id) const
 	{
 		// TODO
-		return faces[0];
+		return faces[id];
 	}
 
-	glm::vec3 RigidBody::GetVertex() const
+	glm::vec3 RigidBody::GetVertex(int id) const
 	{
 		// TODO
-		return vertex[0];
+		return vertex[id];
 	}
 
-	/*bool RigidBody::DetectCollision(RigidBody cube, RigidBody floor) const
+	bool RigidBody::DetectCollision(RigidBody* A, RigidBody* B) const
 	{
 		// TODO
+		glm::mat3 aFace;
+
+		// a * x + b * y + c * z + d = 0
+		// Putting it in the form dot( (a,b,c,d), (x,y,z,1) ) > 0 
+		// where positive dot product is in front of the plane and 
+		// negative is behind could be useful/faster. Zero if it is exactly on the plane.
+		//if (glm::dot(aFace, glm::vec4(A->vertex[0], 1.f)) > 0) {}
+
+		for (int i = 0; i < A->faces.size(); i++)
+		{
+			 aFace = A->GetFace(i);
+
+			 for (int i = 0; i < A->vertex.size(); i++)
+			 {
+				 A->GetVertex(i);
+			 }
+
+			 for (int i = 0; i < B->vertex.size(); i++)
+			 {
+				 B->GetVertex(i);
+			 }
+		}
+
+
 		return true;
-	}*/
+	}
 
 #pragma endregion
 	RbState SemiImplicitEuler(const RigidBody* rb, float dt)

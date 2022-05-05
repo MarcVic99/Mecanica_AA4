@@ -49,10 +49,10 @@ namespace AA4
 		float GetMassInverse() const;
 		glm::quat GetQuat(float angle, glm::vec3 axis) const;
 
-		glm::mat3 GetFace() const;
-		glm::vec3 GetVertex() const;
+		glm::mat3 GetFace(int id) const;
+		glm::vec3 GetVertex(int id) const;
 
-		//bool DetectCollision(RigidBody cube, RigidBody floor) const;
+		bool DetectCollision(RigidBody* A, RigidBody* B) const;
 
 		virtual void Render() const = 0;
 
