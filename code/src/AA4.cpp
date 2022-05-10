@@ -180,30 +180,55 @@ namespace AA4
 		return vertex[id];
 	}
 
+	// A is plane/wall B is cube
 	bool RigidBody::DetectCollision(RigidBody* A, RigidBody* B) const
 	{
 		// TODO
-		glm::mat3 aFace;
+		glm::vec4 aFace; // (a, b, c, d)
+		std::vector<glm::vec4> vecsBehindPlane;
 
 		// a * x + b * y + c * z + d = 0
 		// Putting it in the form dot( (a,b,c,d), (x,y,z,1) ) > 0 
 		// where positive dot product is in front of the plane and 
 		// negative is behind could be useful/faster. Zero if it is exactly on the plane.
-		//if (glm::dot(aFace, glm::vec4(A->vertex[0], 1.f)) > 0) {}
+
+		// (n * p + d)
+		// Check normal direction to see 
+		// if it's really colliding with rb
 
 		for (int i = 0; i < A->faces.size(); i++)
 		{
-			 aFace = A->GetFace(i);
+			for (int j = 0; j < B->vertex.size(); j++)
+			{
+				glm::vec4 vertVec = glm::vec4(B->vertex[j], 1.f);
 
-			 for (int i = 0; i < A->vertex.size(); i++)
-			 {
-				 A->GetVertex(i);
-			 }
+				if (glm::dot(aFace, vertVec) > 0)
+				{
+					// In front of plane
+				}
+				else if (glm::dot(aFace, vertVec) < 0)
+				{
+					// Behind of plane (COLLISION)
+					vecsBehindPlane.push_back(glm::vec4(B->vertex[j], 1.f));
+				}
+				else
+				{
+					// In plane
+				}
+			}
+			
 
-			 for (int i = 0; i < B->vertex.size(); i++)
-			 {
-				 B->GetVertex(i);
-			 }
+			/*aFace = A->GetFace(i);
+
+			for (int i = 0; i < A->vertex.size(); i++)
+			{
+				A->GetVertex(i);
+			}
+
+			for (int i = 0; i < B->vertex.size(); i++)
+			{
+				B->GetVertex(i);
+			}*/
 		}
 
 
