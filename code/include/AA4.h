@@ -9,11 +9,8 @@ namespace AA4
 
 	struct RbState 
 	{
-		// TODO
 		glm::vec3 centerOfMass;
 
-		//glm::mat3 rotation;
-		
 		glm::vec3 P; // Moment linear
 		glm::vec3 L; // Moment Angu-L-ar
 
@@ -31,7 +28,6 @@ namespace AA4
 			this->InverseIbody = glm::inverse(Ibody);
 
 			state.centerOfMass = CoM;
-			//state.rotation = rotation;
 			state.P = mass * v;
 			state.L = glm::inverse(GetInverseInertiaTensor()) * w;
 
@@ -49,10 +45,10 @@ namespace AA4
 		float GetMassInverse() const;
 		glm::quat GetQuat(float angle, glm::vec3 axis) const;
 
-		glm::mat3 GetFace(int id) const;
+		glm::vec4 GetFace(int id) const;
 		glm::vec3 GetVertex(int id) const;
 
-		bool DetectCollision(RigidBody* A, RigidBody* B) const;
+		bool DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const;
 
 		virtual void Render() const = 0;
 
@@ -63,7 +59,7 @@ namespace AA4
 		float rbAngle;
 		glm::mat3 InverseIbody;
 
-		std::vector<glm::mat3> faces;
+		std::vector<glm::vec4> faces;
 		std::vector<glm::vec3> vertex;
 
 	private:
@@ -86,7 +82,18 @@ namespace AA4
 	class RigidWall : public RigidBody 
 	{
 	public:
+		RigidWall(glm::vec3 planePoint, glm::vec3 planeN);
 		void Render() const;
+		float CalculatePlaneD(glm::vec3 normalVector, glm::vec3 planePoint);
+
+		glm::vec3 GetPlaneCoM() { return planeCenterOfMass; };
+		glm::vec3 GetPlaneNormal() { return planeNormal; };
+		float GetPlaneD() { return planeD; };
+
+	private:
+		glm::vec3 planeCenterOfMass;
+		glm::vec3 planeNormal;
+		float planeD;
 	};
 
 	class RigidSphere : public RigidBody 
@@ -95,7 +102,7 @@ namespace AA4
 		void Render() const;
 	};
 
-	RbState SemiImplicitEuler(const RigidBody* rb, float dt);
+	RbState SemiImplicitEuler(std::vector<RigidBody*> rbWall, RigidBody* rbCube, float dt);
 
 	class AA4Simulator : public Simulator 
 	{

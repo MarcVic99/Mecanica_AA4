@@ -16,7 +16,7 @@ namespace AA4
 	{
 		float mass = 5.f;
 		float angle = 30.f;
-		glm::vec3 velInit = glm::vec3(0.f, 0.2f, 0.f);
+		glm::vec3 velInit = glm::vec3(0.f, 1.f, 0.f);
 		
 		/*glm::mat3 rotRoll = glm::mat3(glm::vec3(1,0,0), 
 			glm::vec3 (0, glm::cos(glm::radians(angle)), -glm::sin(glm::radians(angle))),
@@ -32,6 +32,13 @@ namespace AA4
 
 		glm::mat3 rotation = rotYaw * rotPitch * rotRoll;*/
 		
+		obstacles.push_back(new RigidWall(glm::vec3(-5.f, 0.f, 0.f), glm::vec3(1.f, 0.f, 0.f))); // Left wall
+		obstacles.push_back(new RigidWall(glm::vec3(5.f, 0.f, 0.f), glm::vec3(1.f, 0.f, 0.f))); // Right wall
+		obstacles.push_back(new RigidWall(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 1.f))); // Front wall
+		obstacles.push_back(new RigidWall(glm::vec3(0.f, 0.f, -5.f), glm::vec3(0.f, 0.f, 1.f))); // Back wall
+		obstacles.push_back(new RigidWall(glm::vec3(0.f, 10.f, 0.f), glm::vec3(0.f, 1.f, 0.f))); // Roof wall
+		obstacles.push_back(new RigidWall(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f))); // Floor wall
+
 		simulatedObject = new RigidCube(
 			mass, 
 			glm::vec3(0.f, 5.f, 0.f), 
@@ -47,7 +54,7 @@ namespace AA4
 	void AA4Simulator::Update(float dt) 
 	{
 		RbState previousState = simulatedObject->GetState();
-		RbState newState = SemiImplicitEuler(simulatedObject, dt);
+		RbState newState = SemiImplicitEuler(obstacles, simulatedObject, dt);
 
 		// Manage collisions with obstacles
 
@@ -71,6 +78,7 @@ namespace AA4
 
 #pragma region RigidBodies
 
+	// == RIGID BODY ==
 	RbState RigidBody::GetState() const 
 	{
 		return state;
@@ -100,7 +108,6 @@ namespace AA4
 
 	glm::mat3 RigidBody::GetRotationMatrix() const 
 	{
-		// TODO
 		// Make it use quaternions
 		// Access state.quat
 		// Convert to 3x3 mat
@@ -132,30 +139,6 @@ namespace AA4
 		return glm::translate(glm::mat4(), state.centerOfMass) * glm::mat4(GetRotationMatrix());
 	}
 
-	void RigidCube::Render() const 
-	{
-		Cube::updateCube(GetTransformMatrix());	
-	}
-
-	glm::mat3 RigidCube::ComputeIbody(float mass, float depth, float width, float height) {
-		
-		glm::mat3 inertiaTensor = glm::mat3(glm::vec3(1.f / 12.f * mass * ((height * height) + (depth * depth)), 0.f, 0.f),
-			glm::vec3(0.f, 1.f / 12.f * mass * ((width * width) + (depth * depth)), 0.f),
-			glm::vec3(0.f, 0.f, 1.f / 12.f * mass * ((width * width) + (height * height))));
-
-		return inertiaTensor;
-	}
-
-	void RigidWall::Render() const 
-	{
-		// DO NOTHING
-	}
-
-	void RigidSphere::Render() const 
-	{
-		// TODO
-	}
-
 	glm::quat RigidBody::GetQuat(float angle, glm::vec3 axis) const
 	{
 		// TODO
@@ -168,7 +151,7 @@ namespace AA4
 		return glm::normalize(resQuat);
 	}
 
-	glm::mat3 RigidBody::GetFace(int id) const
+	glm::vec4 RigidBody::GetFace(int id) const
 	{
 		// TODO
 		return faces[id];
@@ -180,71 +163,135 @@ namespace AA4
 		return vertex[id];
 	}
 
-	// A is plane/wall B is cube
-	bool RigidBody::DetectCollision(RigidBody* A, RigidBody* B) const
+	bool RigidBody::DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const
 	{
 		// TODO
 		glm::vec4 aFace; // (a, b, c, d)
 		std::vector<glm::vec4> vecsBehindPlane;
+		bool isContact = false;
+		bool isTravesing = false;
 
 		// a * x + b * y + c * z + d = 0
 		// Putting it in the form dot( (a,b,c,d), (x,y,z,1) ) > 0 
 		// where positive dot product is in front of the plane and 
 		// negative is behind could be useful/faster. Zero if it is exactly on the plane.
 
+		// == THING EXPLAINED IN CLASS ==
 		// (n * p + d)
 		// Check normal direction to see 
-		// if it's really colliding with rb
+		// if it's really colliding with rbCube
+		// == THING EXPLAINED IN CLASS ==
 
-		for (int i = 0; i < A->faces.size(); i++)
+		for (int i = 0; i < planeRb.size(); i++)
 		{
-			for (int j = 0; j < B->vertex.size(); j++)
-			{
-				glm::vec4 vertVec = glm::vec4(B->vertex[j], 1.f);
+			//aFace = glm::vec4(planeRb[i]->GetPlaneNormal(), planeRb[i]->GetPlaneD());
 
-				if (glm::dot(aFace, vertVec) > 0)
+			for (int j = 0; j < planeRb[i]->faces.size(); j++)
+			{
+				aFace = planeRb[i]->faces[j];
+				printf("%f \n", aFace.y);
+
+				for (int k = 0; k < cubeRb->vertex.size(); k++)
 				{
-					// In front of plane
-				}
-				else if (glm::dot(aFace, vertVec) < 0)
-				{
-					// Behind of plane (COLLISION)
-					vecsBehindPlane.push_back(glm::vec4(B->vertex[j], 1.f));
-				}
-				else
-				{
-					// In plane
+					glm::vec4 vertVec = glm::vec4(cubeRb->vertex[k], 1.f);
+
+					if (glm::dot(aFace, vertVec) > 0)
+					{
+						// In front of plane
+					}
+					else if (glm::dot(aFace, vertVec) < 0)
+					{
+						// Behind of plane (TRAVERSAL COLLISION)
+						vecsBehindPlane.push_back(glm::vec4(cubeRb->vertex[k], 1.f));
+
+						isTravesing = true;
+					}
+					else
+					{
+						// In plane (CONTACT COLLISION)
+						isContact = true;
+					}
 				}
 			}
-			
-
-			/*aFace = A->GetFace(i);
-
-			for (int i = 0; i < A->vertex.size(); i++)
-			{
-				A->GetVertex(i);
-			}
-
-			for (int i = 0; i < B->vertex.size(); i++)
-			{
-				B->GetVertex(i);
-			}*/
 		}
 
+		printf("Travesing: %d \n", isTravesing);
+		printf("Contact: %d \n", isContact);
+		return isContact || isTravesing;
+	}
 
-		return true;
+
+	// == CUBE ==
+	void RigidCube::Render() const 
+	{
+		Cube::updateCube(GetTransformMatrix());	
+	}
+
+	glm::mat3 RigidCube::ComputeIbody(float mass, float depth, float width, float height) {
+		
+		glm::mat3 inertiaTensor = glm::mat3(
+			glm::vec3(1.f / 12.f * mass * ((height * height) + (depth * depth)), 0.f, 0.f),
+			glm::vec3(0.f, 1.f / 12.f * mass * ((width * width) + (depth * depth)), 0.f),
+			glm::vec3(0.f, 0.f, 1.f / 12.f * mass * ((width * width) + (height * height))));
+
+		return inertiaTensor;
+	}
+
+
+	// == WALL / PLANE ==
+	RigidWall::RigidWall(glm::vec3 planePoint, glm::vec3 planeN)
+	{
+		planeCenterOfMass = planePoint;
+		planeNormal = planeN;
+
+		planeD = CalculatePlaneD(planeNormal, planeCenterOfMass);
+
+		faces.push_back(glm::vec4(planeNormal, planeD));
+	}
+
+	void RigidWall::Render() const 
+	{
+		// DO NOTHING
+	}
+
+	float RigidWall::CalculatePlaneD(glm::vec3 normalVector, glm::vec3 planePoint)
+	{
+		//Components of plane's normal vector
+		float A, B, C, D;
+
+		//Components of plane's point 
+		float x, y, z;
+
+		A = normalVector.x;
+		B = normalVector.y;
+		C = normalVector.z;
+
+		x = planePoint.x;
+		y = planePoint.y;
+		z = planePoint.z;
+
+		D = -(A * x) - (B * y) - (C * z);
+
+		return D;
+	}
+
+
+	// == SPHERE ==
+	void RigidSphere::Render() const 
+	{
+		// TODO
 	}
 
 #pragma endregion
-	RbState SemiImplicitEuler(const RigidBody* rb, float dt)
+	RbState SemiImplicitEuler(std::vector<RigidBody*> rbWall, RigidBody* rbCube, float dt)
 	{
 		// TODO
-		RbState current = rb->GetState();
+		RbState current = rbCube->GetState();
 
-		/*if (DetectCollision(RigidBody cube, RigidBody floor))
+		if (rbCube->DetectCollision(rbWall, rbCube))
 		{
 			return current;
-		}*/
+		}
 
 		// P(t + dt) = P(t) + dt * F(t)
 		glm::vec3 newP = current.P; // + dt * F;
@@ -253,13 +300,13 @@ namespace AA4
 		glm::vec3 newL = current.L; // + dt * torque;
 
 		// v(t + dt) = P(t + dt) / M
-		glm::vec3 newVelocity = newP / rb->GetMass();
+		glm::vec3 newVelocity = newP / rbCube->GetMass();
 
 		// x(t + dt) = x(t) + dt * v(t + dt)
 		glm::vec3 newCoM = current.centerOfMass + dt * newVelocity;
 
 		// I(t)^-1 = R(t) * Ibody^-1 * R(t)^T
-		glm::mat3 newInverseIbody = rb->GetInverseInertiaTensor();
+		glm::mat3 newInverseIbody = rbCube->GetInverseInertiaTensor();
 
 		// w(t) = I(t)^-1 * L(t + dt)
 		glm::vec3 vecW = newInverseIbody * newL;
