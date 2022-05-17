@@ -182,22 +182,21 @@ namespace AA4
 		// if it's really colliding with rbCube
 		// == THING EXPLAINED IN CLASS ==
 
-		for (int i = 0; i < planeRb.size(); i++)
+		for (int i = 0; i < planeRb.size(); i++) // Each plane in vector
 		{
-			//aFace = glm::vec4(planeRb[i]->GetPlaneNormal(), planeRb[i]->GetPlaneD());
 
-			for (int j = 0; j < planeRb[i]->faces.size(); j++)
+			for (int j = 0; j < planeRb[i]->faces.size(); j++) // Each face in plane
 			{
 				aFace = planeRb[i]->faces[j];
-				printf("%f \n", aFace.y);
 
-				for (int k = 0; k < cubeRb->vertex.size(); k++)
+				for (int k = 0; k < cubeRb->vertex.size(); k++) // Each vertex in cube
 				{
 					glm::vec4 vertVec = glm::vec4(cubeRb->vertex[k], 1.f);
 
 					if (glm::dot(aFace, vertVec) > 0)
 					{
 						// In front of plane
+						// we do nothing
 					}
 					else if (glm::dot(aFace, vertVec) < 0)
 					{
