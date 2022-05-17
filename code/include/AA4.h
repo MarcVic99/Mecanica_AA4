@@ -21,8 +21,8 @@ namespace AA4
 	class RigidBody 
 	{
 	public:
-		RigidBody() : RigidBody(1.f, glm::mat3(1.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::quat()) {};
-		RigidBody(float mass, glm::mat3 Ibody, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::quat quatRotation)
+		RigidBody() : RigidBody(1.f, glm::mat3(1.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::quat(), std::vector<glm::vec3>()) {};
+		RigidBody(float mass, glm::mat3 Ibody, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::quat quatRotation, std::vector<glm::vec3> vertexs)
 		{
 			this->rbMass = mass;
 			this->InverseIbody = glm::inverse(Ibody);
@@ -33,6 +33,8 @@ namespace AA4
 
 			// normalized quat
 			state.rotQuat = quatRotation;
+
+			vertex = vertexs;
 		};
 
 		RbState GetState() const;
@@ -42,13 +44,15 @@ namespace AA4
 		glm::vec3 GetAngularVelocity() const;
 		glm::mat3 GetRotationMatrix() const;
 		float GetMass() const;
-		float GetMassInverse() const;
+		virtual float GetMassInverse() const;
 		glm::quat GetQuat(float angle, glm::vec3 axis) const;
 
 		glm::vec4 GetFace(int id) const;
-		glm::vec3 GetVertex(int id) const;
+		std::vector<glm::vec3> GetVertex() const;
+		void UpdateVertexs() const;
 
 		bool DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const;
+		void Impulse(RigidBody* rb1, RigidBody* rb2) const;
 
 		virtual void Render() const = 0;
 
@@ -70,8 +74,8 @@ namespace AA4
 	class RigidCube : public RigidBody 
 	{
 	public:
-		RigidCube(float mass, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::quat qRotation) : 
-			RigidBody(mass, ComputeIbody(mass, 1.f, 1.f, 1.f), CoM, v, w, qRotation) {};
+		RigidCube(float mass, glm::vec3 CoM, glm::vec3 v, glm::vec3 w, glm::quat qRotation, std::vector<glm::vec3> vertexs) :
+			RigidBody(mass, ComputeIbody(mass, 1.f, 1.f, 1.f), CoM, v, w, qRotation, vertexs) {};
 		
 		void Render() const;
 
@@ -85,6 +89,8 @@ namespace AA4
 		RigidWall(glm::vec3 planePoint, glm::vec3 planeN);
 		void Render() const;
 		float CalculatePlaneD(glm::vec3 normalVector, glm::vec3 planePoint);
+
+		virtual float GetInverseMass() { return 0.f; };
 
 		glm::vec3 GetPlaneCoM() { return planeCenterOfMass; };
 		glm::vec3 GetPlaneNormal() { return planeNormal; };
