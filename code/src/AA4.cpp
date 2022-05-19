@@ -70,6 +70,18 @@ namespace AA4
 
 		// Manage collisions with obstacles
 		simulatedObject->SetState(newState);
+
+		simulatedObject->collDetected = simulatedObject->DetectCollision(obstacles, simulatedObject);
+		if (simulatedObject->collDetected.isTraversing && !simulatedObject->collDetected.isContact)
+		{
+			// Has traversed
+			simulatedObject->SetState(previousState);
+		}
+		else if (simulatedObject->collDetected.isContact)
+		{
+			// Has collided
+			//simulatedObject->Impulse(simulatedObject, obstacles[0], simulatedObject->collDetected.contactPoint);
+		}
 	}
 
 	void AA4Simulator::RenderUpdate() 
@@ -94,6 +106,7 @@ namespace AA4
 	{
 		return state;
 	}
+
 	void RigidBody::SetState(RbState state) 
 	{
 		this->state = state;
@@ -101,8 +114,7 @@ namespace AA4
 
 	glm::vec3 RigidBody::GetLinearVelocity() const 
 	{
-		// TODO
-		return glm::vec3();
+		return state.P;
 	}
 
 	glm::mat3 RigidBody::GetInverseInertiaTensor() const 
@@ -114,7 +126,7 @@ namespace AA4
 
 	glm::vec3 RigidBody::GetAngularVelocity() const 
 	{
-		return glm::vec3();
+		return state.L;
 	}
 
 	glm::mat3 RigidBody::GetRotationMatrix() const 
@@ -131,6 +143,11 @@ namespace AA4
 			state.rotQuat.x * state.rotQuat.z + state.rotQuat.w * state.rotQuat.y, state.rotQuat.y * state.rotQuat.z - state.rotQuat.w * state.rotQuat.x, 0.5f - state.rotQuat.x * state.rotQuat.x - state.rotQuat.y * state.rotQuat.y);
 
 		return result;
+	}
+
+	glm::vec3 RigidBody::GetCenterOfMass() const
+	{
+		return state.centerOfMass;
 	}
 
 	float RigidBody::GetMass() const
@@ -184,12 +201,13 @@ namespace AA4
 		return newVecs;
 	}
 
-	bool RigidBody::DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const
+	CollisionDetected RigidBody::DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const
 	{
+		CollisionDetected detectedColl;
+
 		// TODO
 		glm::vec3 planePoint;
 		glm::vec3 planeNorm;
-		bool isContact = false;
 
 		glm::vec3 collisionPoint = glm::vec3(1.f);
 		std::vector<glm::vec3> currentCubeVerts = cubeRb->GetVertex();
@@ -251,7 +269,11 @@ namespace AA4
 						// Behind of plane (TRAVERSAL COLLISION)
 						collisionPoint = currentCubeVerts[k];
 
-						return true;
+						detectedColl.isContact = false;
+						detectedColl.isTraversing = true;
+						detectedColl.contactPoint = currentCubeVerts[k];
+						detectedColl.planeNormal = planeNorm;
+						return detectedColl;
 					}
 					else
 					{
@@ -260,23 +282,35 @@ namespace AA4
 						{
 							collisionPoint = currentCubeVerts[k];
 
-							isContact = true;
+							detectedColl.isContact = true;
+							detectedColl.contactPoint = currentCubeVerts[k];
+							detectedColl.planeNormal = planeNorm;
 						}
 					}
 				}
 			}
 		}
 
-		return isContact;
+		return detectedColl;
 	}
 
-	void RigidBody::Impulse(RigidBody* rb1, RigidBody* rb2) const
+	void RigidBody::Impulse(RigidBody* rb1, RigidBody* rb2, glm::vec3 contactPoint) const
 	{
+		glm::vec3 impulseJ;
+		glm::vec3 torqueImpulse;
+
 		// p·a(t0) = va(t0) + wa(t0) X (pa(t0) - xa(t0))
 		// pa --> contact point
+		glm::vec3 pointVelocity = glm::cross((rb1->GetLinearVelocity() + rb1->GetAngularVelocity()), (contactPoint - rb1->GetCenterOfMass()));
 
 		// vrel = n(t0) * (p·a(t0) - p·b(t0))
 		// p·a --> point velocity
+
+		// =======
+
+		// timpulse = (p - x(t)) X J
+		torqueImpulse = glm::cross((rb1->vertex[0] - rb2->vertex[0]), impulseJ);
+
 	}
 
 	// == CUBE ==
@@ -345,11 +379,6 @@ namespace AA4
 	{
 		// TODO
 		RbState current = rbCube->GetState();
-
-		if (rbCube->DetectCollision(rbWall, rbCube))
-		{
-			return current;
-		}
 
 		// P(t + dt) = P(t) + dt * F(t)
 		glm::vec3 newP = current.P; // + dt * F;

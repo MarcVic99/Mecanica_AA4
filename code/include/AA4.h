@@ -6,6 +6,13 @@
 
 namespace AA4 
 {
+	struct CollisionDetected
+	{
+		bool isTraversing;
+		bool isContact;
+		glm::vec3 contactPoint;
+		glm::vec3 planeNormal;
+	};
 
 	struct RbState 
 	{
@@ -43,6 +50,7 @@ namespace AA4
 		glm::mat3 GetInverseInertiaTensor() const;
 		glm::vec3 GetAngularVelocity() const;
 		glm::mat3 GetRotationMatrix() const;
+		glm::vec3 GetCenterOfMass() const;
 		float GetMass() const;
 		virtual float GetMassInverse() const;
 		glm::quat GetQuat(float angle, glm::vec3 axis) const;
@@ -51,11 +59,12 @@ namespace AA4
 		std::vector<glm::vec3> GetVertex() const;
 		void UpdateVertexs() const;
 
-		bool DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const;
-		void Impulse(RigidBody* rb1, RigidBody* rb2) const;
+		CollisionDetected DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const;
+		void Impulse(RigidBody* rb1, RigidBody* rb2, glm::vec3 contactPoint) const;
 
 		virtual void Render() const = 0;
 
+		CollisionDetected collDetected;
 	protected:
 		glm::mat4 GetTransformMatrix() const;
 
