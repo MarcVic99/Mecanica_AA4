@@ -77,7 +77,39 @@ namespace AA4
 			// Has traversed
 			simulatedObject->collDetected.isTraversing = false;
 			simulatedObject->SetState(previousState);
-			Update(dt / 2);
+			UpdateRec(dt / 2);
+		}
+		else if (simulatedObject->collDetected.isContact)
+		{
+			// Has collided
+			//simulatedObject->Impulse(simulatedObject, obstacles[0], simulatedObject->collDetected.contactPoint);
+		}
+	}
+
+	void AA4Simulator::UpdateRec(float dt, int level)
+	{
+		RbState previousState = simulatedObject->GetState();
+		RbState newState = SemiImplicitEuler(obstacles, simulatedObject, dt);
+
+		// Manage collisions with obstacles
+		simulatedObject->SetState(newState);
+
+		simulatedObject->collDetected = simulatedObject->DetectCollision(obstacles, simulatedObject);
+
+		if (level > 10)
+		{
+			RbState state = simulatedObject->GetState();
+			state.centerOfMass += simulatedObject->collDetected.planeNormal * 10.f; //DIST_THRESHOLD;
+			simulatedObject->SetState(state);
+			return;
+		}
+
+		if (simulatedObject->collDetected.isTraversing && !simulatedObject->collDetected.isContact)
+		{
+			// Has traversed
+			simulatedObject->collDetected.isTraversing = false;
+			simulatedObject->SetState(previousState);
+			UpdateRec(dt / 2, level++);
 		}
 		else if (simulatedObject->collDetected.isContact)
 		{

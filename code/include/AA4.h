@@ -124,6 +124,7 @@ namespace AA4
 	public:
 		AA4Simulator();
 		void Update(float dt);
+		void UpdateRec(float dt, int level = 0);
 		void RenderUpdate();
 		void RenderGui();
 
