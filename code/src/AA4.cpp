@@ -75,7 +75,9 @@ namespace AA4
 		if (simulatedObject->collDetected.isTraversing && !simulatedObject->collDetected.isContact)
 		{
 			// Has traversed
+			simulatedObject->collDetected.isTraversing = false;
 			simulatedObject->SetState(previousState);
+			Update(dt / 2);
 		}
 		else if (simulatedObject->collDetected.isContact)
 		{
