@@ -8,9 +8,103 @@ namespace Cube
 	extern void updateCube(const glm::mat4& transform);
 }
 
+
 namespace AA4 
 {
 #pragma region Simulation
+
+	CollisionDetected DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb)
+	{
+		CollisionDetected detectedColl;
+
+		// TODO
+		glm::vec3 planePoint;
+		glm::vec3 planeNorm;
+
+		glm::vec3 collisionPoint = glm::vec3(1.f);
+		std::vector<glm::vec3> currentCubeVerts = cubeRb->GetVertex();
+
+		// a * x + b * y + c * z + d = 0
+		// Putting it in the form dot( (a,b,c,d), (x,y,z,1) ) > 0 
+		// where positive dot product is in front of the plane and 
+		// negative is behind could be useful/faster. Zero if it is exactly on the plane.
+
+		// == THING EXPLAINED IN CLASS ==
+		// (n * p + d)
+		// Check normal direction to see 
+		// if it's really colliding with rbCube
+		// == THING EXPLAINED IN CLASS ==
+
+		// == THING EXPLAINED IN CLASS ==
+		// supose we have plane: 2x + 3y + 3z - 16 = 0
+		// & P1 = (4, 4, 4) & P2 = (-4, -4, 4)
+		// we get the normal vector n = (2, 3, 3)
+		// 
+		// normal to point we get a positive or negative distance
+		// we get a point on the plane with its equation
+		// we solve it by searching the first variable that's not 0
+		// & changing the others to 0, normalize it
+		// == THING EXPLAINED IN CLASS ==
+
+		for (int i = 0; i < planeRb.size(); i++) // Each plane in vector
+		{
+
+			for (int j = 0; j < planeRb[i]->GetFacesSize(); j++) // Each face in plane
+			{
+				planeNorm = glm::vec3(planeRb[i]->GetFace(j));
+
+				if (planeRb[i]->GetFace(j).x != 0)
+				{
+					planePoint = glm::vec3(-planeRb[i]->GetFace(j).w / planeRb[i]->GetFace(j).x, 0.f, 0.f);
+				}
+				else if (planeRb[i]->GetFace(j).y != 0)
+				{
+					planePoint = glm::vec3(0.f, -planeRb[i]->GetFace(j).w / planeRb[i]->GetFace(j).y, 0.f);
+				}
+				else
+				{
+					planePoint = glm::vec3(0.f, 0.f, -planeRb[i]->GetFace(j).w / planeRb[i]->GetFace(j).z);
+				}
+
+				for (int k = 0; k < currentCubeVerts.size(); k++) // Each vertex in cube
+				{
+					glm::vec3 vecToCompare = currentCubeVerts[k] - planePoint;
+
+					if (glm::dot(planeNorm, vecToCompare) > 0)
+					{
+						// In front of plane
+						// we do nothing
+					}
+					else if (glm::dot(planeNorm, vecToCompare) < 0)
+					{
+						// Behind of plane (TRAVERSAL COLLISION)
+						collisionPoint = currentCubeVerts[k];
+
+						detectedColl.isContact = false;
+						detectedColl.isTraversing = true;
+						detectedColl.contactPoint = currentCubeVerts[k];
+						detectedColl.planeNormal = planeNorm;
+						return detectedColl;
+					}
+					else
+					{
+						// In plane (CONTACT COLLISION)
+						if (collisionPoint == glm::vec3(1.f))
+						{
+							collisionPoint = currentCubeVerts[k];
+
+							detectedColl.isContact = true;
+							detectedColl.contactPoint = currentCubeVerts[k];
+							detectedColl.planeNormal = planeNorm;
+						}
+					}
+				}
+			}
+		}
+
+		return detectedColl;
+	}
+
 
 	AA4Simulator::AA4Simulator() 
 	{
@@ -71,18 +165,24 @@ namespace AA4
 		// Manage collisions with obstacles
 		simulatedObject->SetState(newState);
 
-		simulatedObject->collDetected = simulatedObject->DetectCollision(obstacles, simulatedObject);
+		simulatedObject->collDetected = DetectCollision(obstacles, simulatedObject);
 		if (simulatedObject->collDetected.isTraversing && !simulatedObject->collDetected.isContact)
 		{
 			// Has traversed
 			simulatedObject->collDetected.isTraversing = false;
 			simulatedObject->SetState(previousState);
 			UpdateRec(dt / 2);
+			//UpdateRec(dt / 2);
 		}
 		else if (simulatedObject->collDetected.isContact)
 		{
 			// Has collided
-			//simulatedObject->Impulse(simulatedObject, obstacles[0], simulatedObject->collDetected.contactPoint);
+			if (simulatedObject->collDetected.planeNormal != glm::vec3(0.f))
+			{
+				simulatedObject->SetState(previousState);
+				//simulatedObject->Impulse(simulatedObject, obstacles[0], simulatedObject->collDetected.contactPoint);
+			}
+			
 		}
 	}
 
@@ -94,7 +194,7 @@ namespace AA4
 		// Manage collisions with obstacles
 		simulatedObject->SetState(newState);
 
-		simulatedObject->collDetected = simulatedObject->DetectCollision(obstacles, simulatedObject);
+		simulatedObject->collDetected = DetectCollision(obstacles, simulatedObject);
 
 		if (level > 10)
 		{
@@ -110,11 +210,17 @@ namespace AA4
 			simulatedObject->collDetected.isTraversing = false;
 			simulatedObject->SetState(previousState);
 			UpdateRec(dt / 2, level++);
+			//UpdateRec(dt / 2, level++);
 		}
 		else if (simulatedObject->collDetected.isContact)
 		{
 			// Has collided
-			//simulatedObject->Impulse(simulatedObject, obstacles[0], simulatedObject->collDetected.contactPoint);
+			if (simulatedObject->collDetected.planeNormal != glm::vec3(0.f))
+			{
+				simulatedObject->SetState(previousState);
+				//simulatedObject->Impulse(simulatedObject, obstacles[0], simulatedObject->collDetected.contactPoint);
+			}
+			
 		}
 	}
 
@@ -213,6 +319,11 @@ namespace AA4
 		return glm::normalize(resQuat);
 	}
 
+	int RigidBody::GetFacesSize() const
+	{
+		return faces.size();
+	}
+
 	glm::vec4 RigidBody::GetFace(int id) const
 	{
 		// TODO
@@ -235,98 +346,7 @@ namespace AA4
 		return newVecs;
 	}
 
-	CollisionDetected RigidBody::DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const
-	{
-		CollisionDetected detectedColl;
-
-		// TODO
-		glm::vec3 planePoint;
-		glm::vec3 planeNorm;
-
-		glm::vec3 collisionPoint = glm::vec3(1.f);
-		std::vector<glm::vec3> currentCubeVerts = cubeRb->GetVertex();
-
-		// a * x + b * y + c * z + d = 0
-		// Putting it in the form dot( (a,b,c,d), (x,y,z,1) ) > 0 
-		// where positive dot product is in front of the plane and 
-		// negative is behind could be useful/faster. Zero if it is exactly on the plane.
-
-		// == THING EXPLAINED IN CLASS ==
-		// (n * p + d)
-		// Check normal direction to see 
-		// if it's really colliding with rbCube
-		// == THING EXPLAINED IN CLASS ==
-
-		// == THING EXPLAINED IN CLASS ==
-		// supose we have plane: 2x + 3y + 3z - 16 = 0
-		// & P1 = (4, 4, 4) & P2 = (-4, -4, 4)
-		// we get the normal vector n = (2, 3, 3)
-		// 
-		// normal to point we get a positive or negative distance
-		// we get a point on the plane with its equation
-		// we solve it by searching the first variable that's not 0
-		// & changing the others to 0, normalize it
-		// == THING EXPLAINED IN CLASS ==
-
-
-		for (int i = 0; i < planeRb.size(); i++) // Each plane in vector
-		{
-
-			for (int j = 0; j < planeRb[i]->faces.size(); j++) // Each face in plane
-			{
-				planeNorm = glm::vec3(planeRb[i]->faces[j]);
-
-				if (planeRb[i]->faces[j].x != 0)
-				{
-					planePoint = glm::vec3(-planeRb[i]->faces[j].w / planeRb[i]->faces[j].x, 0.f, 0.f);
-				}
-				else if (planeRb[i]->faces[j].y != 0)
-				{
-					planePoint = glm::vec3(0.f, -planeRb[i]->faces[j].w / planeRb[i]->faces[j].y, 0.f);
-				}
-				else
-				{
-					planePoint = glm::vec3(0.f, 0.f, -planeRb[i]->faces[j].w / planeRb[i]->faces[j].z);
-				}
-
-				for (int k = 0; k < currentCubeVerts.size(); k++) // Each vertex in cube
-				{
-					glm::vec3 vecToCompare = currentCubeVerts[k] - planePoint;
-
-					if (glm::dot(planeNorm, vecToCompare) > 0)
-					{
-						// In front of plane
-						// we do nothing
-					}
-					else if (glm::dot(planeNorm, vecToCompare) < 0)
-					{
-						// Behind of plane (TRAVERSAL COLLISION)
-						collisionPoint = currentCubeVerts[k];
-
-						detectedColl.isContact = false;
-						detectedColl.isTraversing = true;
-						detectedColl.contactPoint = currentCubeVerts[k];
-						detectedColl.planeNormal = planeNorm;
-						return detectedColl;
-					}
-					else
-					{
-						// In plane (CONTACT COLLISION)
-						if (collisionPoint == glm::vec3(1.f))
-						{
-							collisionPoint = currentCubeVerts[k];
-
-							detectedColl.isContact = true;
-							detectedColl.contactPoint = currentCubeVerts[k];
-							detectedColl.planeNormal = planeNorm;
-						}
-					}
-				}
-			}
-		}
-
-		return detectedColl;
-	}
+	
 
 	void RigidBody::Impulse(RigidBody* rb1, RigidBody* rb2, glm::vec3 contactPoint) const
 	{
@@ -443,13 +463,6 @@ namespace AA4
 		
 		// q(t + dt) = q(t) + dt * ¨q(t)
 		glm::quat newQuat = glm::normalize(current.rotQuat + dt * derivQuat);
-
-		/*printf("X: %f\n", newCoM.x);
-		printf("Y: %f\n", newCoM.y);
-		printf("Z: %f\n", newCoM.z);*/
-		/*printf("X: %f\n", newP.x);
-		printf("Y: %f\n", newP.y);
-		printf("Z: %f\n", newP.z);*/
 
 		return { newCoM, newP, newL, newQuat };
 	}

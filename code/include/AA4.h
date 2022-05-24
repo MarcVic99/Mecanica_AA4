@@ -55,11 +55,12 @@ namespace AA4
 		virtual float GetMassInverse() const;
 		glm::quat GetQuat(float angle, glm::vec3 axis) const;
 
+		int GetFacesSize() const;
 		glm::vec4 GetFace(int id) const;
 		std::vector<glm::vec3> GetVertex() const;
 		void UpdateVertexs() const;
 
-		CollisionDetected DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const;
+		//CollisionDetected DetectCollision(std::vector<RigidBody*> planeRb, RigidBody* cubeRb) const;
 		void Impulse(RigidBody* rb1, RigidBody* rb2, glm::vec3 contactPoint) const;
 
 		virtual void Render() const = 0;
@@ -77,7 +78,6 @@ namespace AA4
 
 	private:
 		RbState state;
-		// TODO: Add other attributes
 	};
 
 	class RigidCube : public RigidBody 
